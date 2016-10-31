@@ -1,20 +1,13 @@
+[![Build Status](https://travis-ci.org/fgbytes/IPScraper.svg?branch=master)](https://travis-ci.org/fgbytes/IPScraper)
 # IPScraper
 take text file with domain names and return csv with ip's for each
 
 
 ### Project idea
-
+https://travis-ci.org/fgbytes/IPScraper.svg?branch=master
 
 ### Technical details
-
+Using channels and timeouts
 
 ### Performance
-
-| Tables        | concurrency   | time  |
-| ------------- |:-------------:| -----:|
-| col 3 is      | 2048          |  1m29 |
-| col 2 is      | 4096          |   $12 |
-| zebra stripes | are neat      |    $1 |
-
-
-### Running
+50k domains in 1m
