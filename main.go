@@ -19,7 +19,7 @@ var fileNameArgument = os.Args[1]
 func main() {
 	start := time.Now()
 
-	var raw = make(chan string, 2048)
+	var raw = make(chan string, 256)
 	var fixed = make(chan string, 300)
 	var wg sync.WaitGroup
 
@@ -82,42 +82,22 @@ func reader(raw chan string, wg *sync.WaitGroup) {
 
 }
 
-// func fixer(raw chan string, fixed chan string, wg *sync.WaitGroup) {
-// 	defer wg.Done()
-// 	for {
-// 		site := <-raw
-// 		result := getIP(site)
-// 		fixed <- result
-// 		log.Println(len(raw), " ratio ", len(fixed))
-
-// 		if IsReadingFinished && len(raw) == 0 {
-// 			IsTransferComplete = true
-// 			break
-
-// 		}
-// 	}
-// }
 func fixer(raw chan string, fixed chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	c := make(chan string, 1)
+	timeOutChan := make(chan string, 1)
 	for {
 		log.Println(len(raw), " ratio ", len(fixed))
 		site := <-raw
-		go func() { c <- getIP(site) }()
+		go func() { timeOutChan <- getIP(site) }()
 		select {
-		case err := <-c:
-			fixed <- err
+		case receievedIP := <-timeOutChan:
+			fixed <- receievedIP
 
 			// use err and reply
 		case <-time.After(100 * time.Millisecond):
 			fixed <- site + ",timeout!"
 			continue
-			// call timed out
 		}
-
-		// result := getIP(site)
-		// fixed <- result
-		// log.Println(len(raw), " ratio ", len(fixed))
 
 		if IsReadingFinished && len(raw) == 0 {
 			IsTransferComplete = true
