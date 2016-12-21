@@ -8,14 +8,11 @@ import (
 	"os"
 	"sync"
 	"time"
-	//	"time"
 )
 
 var isReadingFinished = false
 var isTransferComplete = false
 var fileNameArgument string
-
-//var isWritingComplete = false
 
 func main() {
 	if len(os.Args) < 2 {
@@ -119,11 +116,17 @@ func fixer(raw chan string, fixed chan string, wg *sync.WaitGroup) {
 
 func writer(fixed chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	file, err := os.Create(fileNameArgument + "_result.csv")
 	if err != nil {
 		log.Fatal("Cannot create file", err)
 	}
-	defer file.Close()
+	defer func() {
+		errFileOpen := file.Close()
+		if errFileOpen != nil {
+			log.Fatal(errFileOpen)
+		}
+	}()
 
 	w := bufio.NewWriter(file)
 
