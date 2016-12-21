@@ -31,8 +31,6 @@ func main() {
 	go fixer(raw, fixed, &wg)
 	go writer(fixed, &wg)
 
-	// var input string
-	// fmt.Scanln(&input)
 	wg.Wait()
 	fmt.Println("Main goroutine exit!")
 	elapsed := time.Since(start)
@@ -44,7 +42,10 @@ func getIP(site string) string {
 	start := time.Now()
 	var ip string
 
-	addrs, _ := net.LookupIP(site)
+	addrs, err := net.LookupIP(site)
+	if err != nil {
+		log.Print(err)
+	}
 
 	fmt.Println("looked up", len(addrs))
 	if len(addrs) == 0 {
@@ -131,14 +132,18 @@ func writer(fixed chan string, wg *sync.WaitGroup) {
 	w := bufio.NewWriter(file)
 
 	for {
-
 		result := <-fixed
 		fmt.Println(result)
 		//	result += "/n"
 		_, err := w.WriteString(result + "\n")
 		fmt.Println("writer error: ", err)
 		// time.Sleep(time.Second * 1)
-		w.Flush()
+		func() {
+			err := w.Flush()
+			if err != nil {
+				log.Fatal("Error flushing file", err)
+			}
+		}()
 
 		if isTransferComplete && len(fixed) == 0 {
 			isTransferComplete = true
@@ -146,11 +151,5 @@ func writer(fixed chan string, wg *sync.WaitGroup) {
 
 		}
 
-	}
-}
-
-func check(e error) {
-	if e != nil {
-		panic(e)
 	}
 }
