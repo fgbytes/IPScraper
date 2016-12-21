@@ -11,12 +11,17 @@ import (
 	//	"time"
 )
 
-var IsReadingFinished bool = false
-var IsTransferComplete bool = false
-var IsWritingComplete bool = false
-var fileNameArgument = os.Args[1]
+var isReadingFinished = false
+var isTransferComplete = false
+var fileNameArgument string
+
+//var isWritingComplete = false
 
 func main() {
+	if len(os.Args) < 2 {
+		log.Fatal("No input file specified. Shutting down")
+	}
+	fileNameArgument = os.Args[1]
 	start := time.Now()
 
 	var raw = make(chan string, 256)
@@ -66,7 +71,12 @@ func reader(raw chan string, wg *sync.WaitGroup) {
 	if err != nil {
 		log.Fatal("Cannot open file", err)
 	}
-	defer file.Close()
+	defer func() {
+		errFileOpen := file.Close()
+		if errFileOpen != nil {
+			log.Fatal(errFileOpen)
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -78,7 +88,7 @@ func reader(raw chan string, wg *sync.WaitGroup) {
 	if err = scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-	IsReadingFinished = true
+	isReadingFinished = true
 
 }
 
@@ -99,8 +109,8 @@ func fixer(raw chan string, fixed chan string, wg *sync.WaitGroup) {
 			continue
 		}
 
-		if IsReadingFinished && len(raw) == 0 {
-			IsTransferComplete = true
+		if isReadingFinished && len(raw) == 0 {
+			isTransferComplete = true
 			break
 
 		}
@@ -127,8 +137,8 @@ func writer(fixed chan string, wg *sync.WaitGroup) {
 		// time.Sleep(time.Second * 1)
 		w.Flush()
 
-		if IsTransferComplete && len(fixed) == 0 {
-			IsTransferComplete = true
+		if isTransferComplete && len(fixed) == 0 {
+			isTransferComplete = true
 			break
 
 		}
