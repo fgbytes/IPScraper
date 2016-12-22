@@ -18,18 +18,18 @@ func main() {
 	fileNameArgument = os.Args[1]
 	start := time.Now()
 
-	var raw = make(chan string, 256)
-	var fixed = make(chan string, 300)
+	var raw = make(chan string, 128)
+	var fixed = make(chan string, 128)
 	var wg sync.WaitGroup
 
 	wg.Add(3)
 
-	go reader(raw, &wg)
-	go fixer(raw, fixed, &wg)
-	go writer(fixed, &wg)
+	go readFileJob(raw, &wg)
+	go checkIPjob(raw, fixed, &wg)
+	go writeFileJob(fixed, &wg)
 
 	wg.Wait()
-	log.Println("Main goroutine exit!")
 	elapsed := time.Since(start)
+	log.Println(" Main goroutine exit!")
 	log.Printf("Checking  IP's took %s", elapsed)
 }

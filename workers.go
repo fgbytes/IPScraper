@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func reader(raw chan string, wg *sync.WaitGroup) {
+func readFileJob(raw chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	file, err := os.Open(fileNameArgument)
 	if err != nil {
@@ -34,7 +34,7 @@ func reader(raw chan string, wg *sync.WaitGroup) {
 
 }
 
-func fixer(raw chan string, fixed chan string, wg *sync.WaitGroup) {
+func checkIPjob(raw chan string, fixed chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	timeOutChan := make(chan string, 1)
 	for {
@@ -58,7 +58,7 @@ func fixer(raw chan string, fixed chan string, wg *sync.WaitGroup) {
 	}
 }
 
-func writer(fixed chan string, wg *sync.WaitGroup) {
+func writeFileJob(fixed chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	file, err := os.Create(fileNameArgument + "_result.csv")
