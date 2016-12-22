@@ -40,11 +40,10 @@ func checkIPjob(raw chan string, fixed chan string, wg *sync.WaitGroup) {
 	for {
 		site := <-raw
 		go func() { timeOutChan <- getIP(site) }()
+
 		select {
 		case receievedIP := <-timeOutChan:
 			fixed <- receievedIP
-
-			// use err and reply
 		case <-time.After(100 * time.Millisecond):
 			fixed <- site + ",timeout!"
 			continue
