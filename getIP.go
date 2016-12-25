@@ -9,24 +9,20 @@ import (
 func getIP(site string) string {
 
 	start := time.Now()
-	var namedIPResponce string
-
-	siteIP, err := net.LookupIP(site)
+	IP, err := net.LookupIP(site)
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 	}
 
-	if len(siteIP) == 0 {
-		namedIPResponce = site + ",notfound"
-	} else {
-		namedIPResponce = site + "," + siteIP[0].String()
+	if len(IP) == 0 {
+		return "not_found"
 	}
-	log.Println("received ip: ", namedIPResponce)
+
+	log.Printf("received ip : %s", IP[0].String())
 
 	if elapsed := time.Since(start); elapsed > 10*time.Millisecond {
 		log.Printf("IP lookup took %s", elapsed)
-		return site + " ,timeout!"
 	}
-	return namedIPResponce
 
+	return IP[0].String()
 }

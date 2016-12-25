@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-var isReadingFinished = false
-var isTransferComplete = false
 var fileNameArgument string
 
 func main() {
@@ -16,23 +14,25 @@ func main() {
 		log.Fatal("No input file specified. Shutting down")
 	}
 	fileNameArgument = os.Args[1]
+	var raw = make(chan string, 128)
+	var fixed = make(chan string, 128)
+	var wgGlobal sync.WaitGroup
+	wgGlobal.Add(2)
+	var wgWorker sync.WaitGroup
+
 	start := time.Now()
 
-	var raw = make(chan string, 8)
-	var fixed = make(chan string, 8)
-	var wg sync.WaitGroup
+	go readerStart(raw, &wgGlobal)
 
-	wg.Add(3 + 1024)
-
-	go readFileJob(raw, &wg)
-	//go checkIPjob(raw, fixed, &wg)
-	for w := 1; w <= 1024; w++ {
-		go worker(raw, fixed, &wg)
+	for w := 1; w <= 128; w++ {
+		go worker(raw, fixed, &wgWorker, 3000)
+		wgWorker.Add(1)
 	}
 
-	go writeFileJob(fixed, &wg)
+	go writerStart(fixed, &wgGlobal)
+	wgWorker.Wait()
+	wgGlobal.Wait()
 
-	wg.Wait()
 	elapsed := time.Since(start)
 	log.Println(" Main goroutine exit!")
 	log.Printf("Checking  IP's took %s", elapsed)
