@@ -10,27 +10,31 @@ import (
 var fileNameArgument string
 
 func main() {
+	start := time.Now()
 	if len(os.Args) < 2 {
 		log.Fatal("No input file specified. Shutting down")
 	}
 	fileNameArgument = os.Args[1]
-	var raw = make(chan string, 128)
-	var fixed = make(chan string, 128)
+	//raw data channel
+	var raw = make(chan string, chanSise)
+	//fixed - channel for sites with checked IP
+	var fixed = make(chan string, chanSise)
+	//WaitGroup for reader and writer
 	var wgGlobal sync.WaitGroup
-	wgGlobal.Add(2)
+	//WaitGroup wor workers in the pool
 	var wgWorker sync.WaitGroup
+	wgGlobal.Add(2)
 
-	start := time.Now()
-
+	// starting reader, starting reader pool with W as worker count
 	go readerStart(raw, &wgGlobal)
-
-	for w := 1; w <= 128; w++ {
-		go worker(raw, fixed, &wgWorker, 3000)
+	for w := 1; w <= workerCount; w++ {
+		go worker(raw, fixed, &wgWorker, maxDelay)
 		wgWorker.Add(1)
 	}
-
 	go writerStart(fixed, &wgGlobal)
+
 	wgWorker.Wait()
+	close(fixed)
 	wgGlobal.Wait()
 
 	elapsed := time.Since(start)

@@ -81,5 +81,5 @@ func worker(raw chan string, fixed chan string, wg *sync.WaitGroup, delay int) {
 		}
 
 	}
-	close(fixed)
+	
 }
