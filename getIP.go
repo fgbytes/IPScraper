@@ -23,8 +23,9 @@ func getIP(site string) string {
 	}
 	log.Println("received ip: ", namedIPResponce)
 
-	if elapsed := time.Since(start); elapsed > 1*time.Second {
+	if elapsed := time.Since(start); elapsed > 10*time.Millisecond {
 		log.Printf("IP lookup took %s", elapsed)
+		return site + " ,timeout!"
 	}
 	return namedIPResponce
 

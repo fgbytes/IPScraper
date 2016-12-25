@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 	"sync"
-	"time"
 )
 
 func readFileJob(raw chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	file, err := os.Open(fileNameArgument)
 	if err != nil {
 		log.Fatal("Cannot open file", err)
@@ -31,22 +31,20 @@ func readFileJob(raw chan string, wg *sync.WaitGroup) {
 		log.Fatal(err)
 	}
 	isReadingFinished = true
+	close(raw)
 
 }
 
-func checkIPjob(raw chan string, fixed chan string, wg *sync.WaitGroup) {
+func worker(raw <-chan string, fixed chan<- string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	timeOutChan := make(chan string, 1)
-	for {
-		site := <-raw
+	for site := range raw {
+		timeOutChan := make(chan string, 1)
 		go func() { timeOutChan <- getIP(site) }()
 
 		select {
 		case receievedIP := <-timeOutChan:
 			fixed <- receievedIP
-		case <-time.After(100 * time.Millisecond):
-			fixed <- site + ",timeout!"
-			continue
+
 		}
 
 		if isReadingFinished && len(raw) == 0 {
@@ -56,6 +54,29 @@ func checkIPjob(raw chan string, fixed chan string, wg *sync.WaitGroup) {
 		}
 	}
 }
+
+// func checkIPjob(raw chan string, fixed chan string, wg *sync.WaitGroup) {
+// 	defer wg.Done()
+// 	timeOutChan := make(chan string, 1)
+// 	for {
+// 		site := <-raw
+// 		go func() { timeOutChan <- getIP(site) }()
+
+// 		select {
+// 		case receievedIP := <-timeOutChan:
+// 			fixed <- receievedIP
+// 		case <-time.After(100 * time.Millisecond):
+// 			fixed <- site + ",timeout!"
+// 			continue
+// 		}
+
+// 		if isReadingFinished && len(raw) == 0 {
+// 			isTransferComplete = true
+// 			break
+
+// 		}
+// 	}
+// }
 
 func writeFileJob(fixed chan string, wg *sync.WaitGroup) {
 	defer wg.Done()

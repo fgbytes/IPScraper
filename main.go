@@ -18,14 +18,18 @@ func main() {
 	fileNameArgument = os.Args[1]
 	start := time.Now()
 
-	var raw = make(chan string, 128)
-	var fixed = make(chan string, 128)
+	var raw = make(chan string, 8)
+	var fixed = make(chan string, 8)
 	var wg sync.WaitGroup
 
-	wg.Add(3)
+	wg.Add(3 + 1024)
 
 	go readFileJob(raw, &wg)
-	go checkIPjob(raw, fixed, &wg)
+	//go checkIPjob(raw, fixed, &wg)
+	for w := 1; w <= 1024; w++ {
+		go worker(raw, fixed, &wg)
+	}
+
 	go writeFileJob(fixed, &wg)
 
 	wg.Wait()
