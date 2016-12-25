@@ -24,5 +24,4 @@ _testmain.go
 *.prof
 *.txt
 *.csv
-.vscode
 debug
