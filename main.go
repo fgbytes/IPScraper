@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-var fileNameArgument string
+//var fileNameArgument string
 
 func main() {
 	start := time.Now()
 	if len(os.Args) < 2 {
 		log.Fatal("No input file specified. Shutting down")
 	}
-	fileNameArgument = os.Args[1]
+	fileNameArgument := os.Args[1]
 	//raw data channel
 	var raw = make(chan string, chanSise)
 	//fixed - channel for sites with checked IP

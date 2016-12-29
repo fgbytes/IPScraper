@@ -11,7 +11,7 @@ import (
 func readerStart(raw chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	file, err := os.Open(fileNameArgument)
+	file, err := os.Open(os.Args[1])
 	if err != nil {
 		log.Fatal("Cannot open file", err)
 	}
@@ -38,7 +38,7 @@ func readerStart(raw chan string, wg *sync.WaitGroup) {
 func writerStart(fixed chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	file, err := os.Create(fileNameArgument + "_result.csv")
+	file, err := os.Create(os.Args[1] + "_result.csv")
 	if err != nil {
 		log.Fatal("Cannot create file", err)
 	}
@@ -81,5 +81,5 @@ func worker(raw chan string, fixed chan string, wg *sync.WaitGroup, delay int) {
 		}
 
 	}
-	
+
 }
